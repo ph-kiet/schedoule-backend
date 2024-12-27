@@ -1,8 +1,10 @@
-const express = require('express')
-const dotenv = require('dotenv').config();
-const dbConnect = require('./config/dbConnect')
-const authRoutes = require('./routes/authRoutes')
-const userRoutes = require('./routes/userRoutes')
+import express from 'express';
+import dotenv from 'dotenv'
+import dbConnect from './config/dbConnect.js';
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+
+dotenv.config()
 const app = express()
 
 // MongoDB connection
