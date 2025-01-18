@@ -4,6 +4,7 @@ import dbConnect from './config/dbConnect.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 
+
 dotenv.config()
 const app = express()
 
@@ -13,8 +14,13 @@ dbConnect()
 // Middleware
 app.use(express.json())
 
-//Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
+//Api routes
+const apiRouter = express.Router();
+
+apiRouter.use('/auth', authRoutes)
+apiRouter.use('/users', userRoutes)
+
+app.use('/api', apiRouter)
+
 
 app.listen(3005, () => console.log("Server is running on 3005"))

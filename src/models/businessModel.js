@@ -1,9 +1,10 @@
-const mongoose = require("mongoose")
+import mongoose from "mongoose"
 
 const businessSchema = mongoose.Schema({
     code: {
         type: Number,
-        required: true
+        required: true,
+        unique: true
     },
     name: {
         type: String,
