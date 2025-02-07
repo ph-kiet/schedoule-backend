@@ -2,7 +2,7 @@ import express from 'express';
 import verifyToken from '../middlewares/authMiddleware.js';
 import authorizeRoles from '../middlewares/roleMiddleware.js'
 import User from '../models/userModel.js'
-import {createBusinessOwner, createEmployee} from '../controllers/userController.js';
+import {createEmployee} from '../controllers/userController.js';
 
 const router = express.Router()
 
@@ -18,8 +18,7 @@ router.get('/', [verifyToken, authorizeRoles("ADMIN")] , async (req, res) => {
     }
 })
 
-// Create new business owner by admin
-router.post('/businessOwner', [verifyToken, authorizeRoles("ADMIN")], createBusinessOwner)
+
 
 // Create new employee
 router.post('/employee', [verifyToken, authorizeRoles("ADMIN", "BUSINESSOWNER")], createEmployee)

@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv'
 import dbConnect from './config/dbConnect.js';
 import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 
 dotenv.config()
@@ -18,7 +18,7 @@ app.use(express.json())
 const apiRouter = express.Router();
 
 apiRouter.use('/auth', authRoutes)
-apiRouter.use('/users', userRoutes)
+apiRouter.use('/admin', adminRoutes)
 
 app.use('/api', apiRouter)
 

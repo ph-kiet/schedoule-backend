@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 const businessSchema = mongoose.Schema({
     code: {
-        type: Number,
+        type: String,
         required: true,
         unique: true
     },
@@ -10,11 +10,15 @@ const businessSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    owerId: {
+    ownerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
     }
-})
+}, 
+{
+    timestamps: true,
+}
+)
 
 export default mongoose.model("Business", businessSchema)
