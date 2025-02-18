@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs'
 /* -------------------------------------------------- /api/admin/ -------------------------------------------------- */
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Business Owner >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+// POST /businessOwner
 // Create a new business owner
 const createBusinessOwner = async (req, res) => {
     try{
@@ -60,6 +61,7 @@ const createBusinessOwner = async (req, res) => {
 
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+// POST /employee
 // Create a new employee
 const createEmployee = async (req, res) => {
     try{
@@ -97,4 +99,48 @@ const createEmployee = async (req, res) => {
 }
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Employee <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
-export {createBusinessOwner, createEmployee}
+
+
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> User (General) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+// PATCH /user
+// Update user details
+const updateUser = async (req, res) => {
+    try{
+        const { username } = req.params;
+        const { firstName, lastName, position, email, phoneNumber, password, accountType, businessId } = req.body;
+
+        const user = await User.findOne({ username });
+        if(!user) return res.status(404).json({ message: 'Username is not found!'});
+
+        // Build update user function later
+
+        res.status(200).json({message: "Update user"})
+    } catch(err){
+        res.status(500).json({error: err.message})
+    }
+}
+
+
+// DELETE /user
+// Delete an user
+const deleteUser = async (req, res) => {
+    try{
+        const { username } = req.params
+
+        const deletedUser = await User.findOneAndDelete({ username })
+
+        if(!deletedUser) return res.status(404).json({ message: `User ${username} is not found!` })
+
+        res.status(200).json({message: `Deleted user ${username}.`})
+    } catch(err){
+        res.status(500).json({error: err.message})
+    }
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< User (General) <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+
+
+export {createBusinessOwner,
+        createEmployee,
+        updateUser,
+        deleteUser}
