@@ -1,7 +1,7 @@
 {
   "name": "schedoule-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "MONGO_HOST=\\\r MONGO_PORT=27017\\\r MONGO_DBNAME=\\\r MONGO_USER=\\\r MONGO_PASSWORD=",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -13,10 +13,20 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "geolib": "^3.3.4",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ph-kiet/schedoule-backend.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/ph-kiet/schedoule-backend/issues"
+  },
+  "homepage": "https://github.com/ph-kiet/schedoule-backend#readme"
 }
