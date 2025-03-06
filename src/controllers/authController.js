@@ -23,22 +23,22 @@ const login = async (req, res) => {
 
         const business = await Business.findOne({code: businessCode})
         if(!business){
-            return res.status(404).json({message: `Business ${businessCode} is not found!`})
+            return res.status(400).json({errorMsg: `Business ${businessCode} is not found!`})
         }
 
         const user = await User.findOne({username: username, businessId: business._id})
         if(!user) {
-            return res.status(404).json({message: `${username} is not found!`})
+            return res.status(400).json({errorMsg: `${username} is not found!`})
         }
         
         const isMatched = await bcrypt.compare(password, user.password);
         
         if(!isMatched){
-            return res.status(400).json({message: `Wrong password!`})
+            return res.status(400).json({errorMsg: `Wrong password!`})
         }
 
         const token = jwt.sign(
-            { id: user._id, accountType: user.accountType },
+            { id: user._id, accountType: user.accountType, firstName: user.firstName, lastName: user.lastName },
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
         )

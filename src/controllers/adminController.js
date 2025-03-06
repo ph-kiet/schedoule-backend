@@ -20,7 +20,8 @@ const createBusinessOwner = async (req, res) => {
 
         user = new User({
             username: username,
-            password: await bcrypt.hash(generateRandomPassword(12), 10),
+            password: await bcrypt.hash('password', 10),
+            // password: await bcrypt.hash(generateRandomPassword(12), 10),
             accountType: "BUSINESSOWNER",
             firstName: userDetails.firstName,
             lastName: userDetails.lastName,
@@ -65,7 +66,7 @@ const createBusinessOwner = async (req, res) => {
 // Create a new employee
 const createEmployee = async (req, res) => {
     try{
-        const {username, businessCode, userDetails} = req.body
+        const {username, businessCode, firstName, lastName, email, phoneNumber, position} = req.body
 
         let user = await User.findOne({username})
         if(user){
@@ -81,11 +82,11 @@ const createEmployee = async (req, res) => {
             username: username,
             password: await bcrypt.hash(generateRandomPassword(12), 10),
             accountType: "EMPLOYEE",
-            firstName: userDetails.firstName,
-            lastName: userDetails.lastName,
-            email: userDetails.email,
-            phoneNumber: userDetails.phoneNumber,
-            position: userDetails.position,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phoneNumber: phoneNumber,
+            position: position,
             businessId: business._id
         })
 
