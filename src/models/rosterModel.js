@@ -3,7 +3,7 @@ import mongoose from "mongoose"
 const rosterShema = mongoose.Schema({
     employeeId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Employee",
+        ref: "User",
         required: true
     },
     businessId: {
