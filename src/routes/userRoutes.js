@@ -24,4 +24,5 @@ router.get('/', [verifyToken, authorizeRoles("ADMIN")] , async (req, res) => {
 router.post('/employee', [verifyToken, authorizeRoles("ADMIN", "BUSINESSOWNER")], createEmployee)
 
 
+
 export default router

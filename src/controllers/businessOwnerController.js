@@ -2,7 +2,8 @@ import Business from "../models/businessModel.js"
 import User from '../models/userModel.js'
 import bcrypt from 'bcryptjs'
 import generateRandomPassword from '../utils/randomPassword.js'
-
+import QRCODE from 'qrcode'
+import generateDailyToken from "../utils/generateDailyToken.js"
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 // POST /employee
 // Create a new employee
@@ -84,5 +85,40 @@ const deleteEmployee = async (req, res) => {
 }
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Employee <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> QR Code >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+// GET /qr-code
+const generateQRCode = async (req, res) => {
+    const qrConfig = {
+        errorCorrectionLevel: "H",
+        type: 'image/png',
+        scale: 10,
+    }
 
-export {createEmployee, updateEmployee, deleteEmployee}
+    try {
+        const loggedInUserID = req.user.id;
+        const businessId = await Business.findOne(
+          { ownerId: loggedInUserID },
+          { _id: 1 }
+        );
+    
+        const qrCodeToken = generateDailyToken(businessId)
+        
+        const qrUrl = `http://localhost:3000/attendance?token=${qrCodeToken}`
+
+        const qrCodeImage = await QRCODE.toDataURL(qrUrl, qrConfig)
+        
+        res.json({
+            qrCode: qrCodeImage,
+            qrCodeToken: qrCodeToken,
+            expires: new Date(new Date().setHours(23, 59, 59, 999)).toISOString(),
+        });
+    
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to generate QR code' });
+      }
+
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< QR Code <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+export {createEmployee, updateEmployee, deleteEmployee, generateQRCode}

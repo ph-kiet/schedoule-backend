@@ -75,9 +75,19 @@ const getRosterByMonthAndYear = async (req, res) => {
     
         res.status(200).json(rosters);
     }catch(err) {
+        console.log(err)
+        res.status(500).json({error: err.message})
+    }
+}
+
+const updateAssignedRoster = async (req, res) => {
+    try {
+        const loggedInUserID = req.user.id
+        
+    } catch (err) {
         res.status(500).json({error: err.message})
     }
 }
 
 
-export {createNewRoster, getRosterByMonthAndYear}
+export {createNewRoster, getRosterByMonthAndYear, updateAssignedRoster}
