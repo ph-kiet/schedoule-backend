@@ -59,7 +59,7 @@ const qrCheckIn = async (req, res) => {
   try {
     const attendance = await new Attendance({
       date: today,
-      checkInTime: roundToQuarterHour(new Date().setHours(10,0,0,0)),
+      checkInTime: roundToQuarterHour(new Date()),
       checkOutTime: null,
       totalHours: 0,
       employeeId: loggedInEmployeeID,
@@ -92,7 +92,7 @@ const qrCheckOut = async (req, res) => {
     }
 
     // Set check out time
-    attendance.checkOutTime = roundToQuarterHour(new Date().setHours(17,59,0,0));
+    attendance.checkOutTime = roundToQuarterHour(new Date());
 
     // Calculate total hours
     const checkIn = new Date(attendance.checkInTime)
@@ -129,6 +129,7 @@ const roundToQuarterHour = (date) => {
   return newDate;
 };
 
+// Hours and minutes to decimal. Ex shift starts 9:45 - 18:00 = 8:25 Hours -> 8.15
 const calculateHoursAndMinutes = (checkIn, checkOut) => {
   const diffInMs = checkOut - checkIn;
   const totalMinutes = diffInMs / (1000 * 60); // Total minutes
