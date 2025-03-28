@@ -1,12 +1,11 @@
 import crypto from "crypto";
 import Attendance from "../models/attendanceModel.js";
-import Business from "../models/businessModel.js";
+import User from "../models/userModel.js";
+import calculateHoursAndMinutes from "../utils/calculateHoursAndMinutes.js";
 
 const qrCheckIn = async (req, res) => {
   const { token } = req.body;
   const loggedInEmployeeID = req.user.id;
-
-  let businessId = null;
 
   if (!token || !loggedInEmployeeID) {
     return res.status(400).json({ error: "Token and employeeId are required" });
@@ -35,23 +34,22 @@ const qrCheckIn = async (req, res) => {
   const [datePart, hashPart] = token.split(".");
 
   const today = new Date().toISOString().split("T")[0];
-
+  let user = null
   try {
-    businessId = await Business.findOne(
-      { ownerId: loggedInEmployeeID },
-      { _id: 1 }
-    );
+    user = await User.findOne({_id: loggedInEmployeeID}, { businessId: 1 })
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Failed to save check-in" });
   }
 
+  // console.log(user)
+
   const validHash = crypto
     .createHmac("sha256", process.env.QR_CODE_SECRET)
-    .update(datePart + businessId)
+    .update(datePart + user.businessId)
     .digest("hex")
     .slice(0, 10);
-
+  
   if (datePart !== today || hashPart !== validHash) {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
@@ -63,7 +61,7 @@ const qrCheckIn = async (req, res) => {
       checkOutTime: null,
       totalHours: 0,
       employeeId: loggedInEmployeeID,
-      businessId: businessId,
+      businessId: user.businessId,
     });
 
     attendance.save();
@@ -129,15 +127,7 @@ const roundToQuarterHour = (date) => {
   return newDate;
 };
 
-// Hours and minutes to decimal. Ex shift starts 9:45 - 18:00 = 8:25 Hours -> 8.15
-const calculateHoursAndMinutes = (checkIn, checkOut) => {
-  const diffInMs = checkOut - checkIn;
-  const totalMinutes = diffInMs / (1000 * 60); // Total minutes
-  const hours = Math.floor(totalMinutes / 60); // Whole hours
-  const remainingMinutes = Math.round((totalMinutes % 60) / 15) * 15; // Round to nearest 15
-  const minutesDecimal = remainingMinutes === 60 ? 0 : remainingMinutes / 100; // Convert to decimal
-  return hours + minutesDecimal;
-};
+
 
 const checkIfCheckedIn = async (employeeId) => {
   const date = new Date().toISOString().split("T")[0];

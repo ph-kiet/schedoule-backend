@@ -17,7 +17,7 @@ const app = express();
 dbConnect();
 
 // Whitelist of allowed frontend origins
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:5174"];
 
 // Middleware
 app.use(

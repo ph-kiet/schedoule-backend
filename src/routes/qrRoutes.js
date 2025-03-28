@@ -5,7 +5,7 @@ import { qrCheckIn, qrCheckOut } from '../controllers/qrCodeController.js';
 
 const router = express.Router()
 
-router.post('/check-in', [verifyToken], qrCheckIn)
-router.post('/check-out', [verifyToken], qrCheckOut)
+router.post('/check-in', [verifyToken, authorizeRoles("EMPLOYEE")], qrCheckIn)
+router.post('/check-out', [verifyToken, authorizeRoles("EMPLOYEE")], qrCheckOut)
 
 export default router

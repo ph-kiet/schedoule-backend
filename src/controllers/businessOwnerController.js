@@ -23,7 +23,8 @@ const createEmployee = async (req, res) => {
 
         user = new User({
             username: username,
-            password: await bcrypt.hash(generateRandomPassword(12), 10),
+            // password: await bcrypt.hash(generateRandomPassword(12), 10),
+            password: await bcrypt.hash('password', 10),
             accountType: "EMPLOYEE",
             firstName: firstName,
             lastName: lastName,
@@ -101,7 +102,7 @@ const generateQRCode = async (req, res) => {
           { _id: 1 }
         );
     
-        const qrCodeToken = generateDailyToken(businessId)
+        const qrCodeToken = generateDailyToken(businessId._id)
         
         const qrUrl = `http://localhost:3000/attendance?token=${qrCodeToken}`
 
