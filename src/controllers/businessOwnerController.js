@@ -122,4 +122,23 @@ const generateQRCode = async (req, res) => {
 }
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< QR Code <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
-export {createEmployee, updateEmployee, deleteEmployee, generateQRCode}
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Business >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+// Get /business
+// Get bussines details
+const getBusinessDetails = async (req, res) => {
+    const loggedInUserID = req.user.id
+
+    try {
+        const business = await Business.findOne({ownerId: loggedInUserID}, {_id: 0, name: 1, code: 1})
+
+        return res.status(200).json({business: business})
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    }
+}
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Business <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+
+export {createEmployee, updateEmployee, deleteEmployee, generateQRCode, getBusinessDetails}

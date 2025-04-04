@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import rosterRoutes from "./routes/rosterRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
+import userRoutes from "./routes/userRoutes.js"
 import businessOwnerRoutes from "./routes/businessOwnerRoutes.js";
 import qrRoutes from "./routes/qrRoutes.js";
 import cors from "cors";
@@ -48,6 +49,7 @@ apiRouter.use("/admin", adminRoutes);
 apiRouter.use("/roster", rosterRoutes);
 apiRouter.use("/employee", employeeRoutes);
 apiRouter.use("/business-owner", businessOwnerRoutes);
+apiRouter.use("/user", userRoutes)
 apiRouter.use("/qr", qrRoutes);
 
 app.use("/api", apiRouter);

@@ -2,7 +2,7 @@ import express from 'express'
 const router = express.Router()
 import verifyToken from '../middlewares/authMiddleware.js';
 import authorizeRoles from '../middlewares/roleMiddleware.js'
-import { createEmployee, deleteEmployee, generateQRCode, updateEmployee } from '../controllers/businessOwnerController.js';
+import { createEmployee, deleteEmployee, generateQRCode, getBusinessDetails, updateEmployee } from '../controllers/businessOwnerController.js';
 
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
@@ -21,4 +21,8 @@ router.delete('/employee/:username', [verifyToken, authorizeRoles("BUSINESSOWNER
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> QR Code >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 router.get('/qr-code', [verifyToken, authorizeRoles('BUSINESSOWNER')], generateQRCode)
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< QR Code <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Business >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+router.get('/business', [verifyToken, authorizeRoles('BUSINESSOWNER')], getBusinessDetails)
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Business <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 export default router
