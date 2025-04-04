@@ -1,7 +1,7 @@
 import express from 'express'
 import verifyToken from '../middlewares/authMiddleware.js';
 import authorizeRoles from '../middlewares/roleMiddleware.js'
-import {createNewRoster, getRosterByMonthAndYear, updateAssignedRoster} from '../controllers/rosterController.js'
+import {createNewRoster, getRosterByMonthAndYear, updateAssignedRoster, deleteRoster} from '../controllers/rosterController.js'
 
 
 const router = express.Router()
@@ -13,6 +13,9 @@ router.post('/', [verifyToken, authorizeRoles("BUSINESSOWNER")], createNewRoster
 router.get('/byMonthAndYear/:month/:year', [verifyToken, authorizeRoles("BUSINESSOWNER")], getRosterByMonthAndYear)
 
 // Update assigned roster
-router.patch('/', [verifyToken, authorizeRoles("BUSINESSOWNER")], updateAssignedRoster)
+router.put('/', [verifyToken, authorizeRoles("BUSINESSOWNER")], updateAssignedRoster)
+
+// Delete roster
+router.delete('/:id', [verifyToken, authorizeRoles("BUSINESSOWNER")], deleteRoster)
 
 export default router

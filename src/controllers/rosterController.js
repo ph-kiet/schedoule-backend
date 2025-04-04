@@ -35,7 +35,7 @@ const getCurrentWeekRosterByEmployeeId = async (req, res) => {
     
 }
 
-
+// GET /byMonthAndYear/:month/:year
 const getRosterByMonthAndYear = async (req, res) => {
     try{
         const loggedInUserID = req.user.id
@@ -80,14 +80,67 @@ const getRosterByMonthAndYear = async (req, res) => {
     }
 }
 
+// PUT /
+// Update roster
 const updateAssignedRoster = async (req, res) => {
     try {
-        const loggedInUserID = req.user.id
-        
+        const loggedInUserID = req.user.id;
+        const business = await Business.findOne({ ownerId: loggedInUserID }, { _id: 1 });
+
+        const { rosters } = req.body;
+
+        if (!Array.isArray(rosters) || rosters.length === 0) {
+            return res.status(400).json({ error: "Rosters must be a non-empty array" });
+        }
+
+        const savedRosters = [];
+
+        for (const roster of rosters) {
+            const rosterData = {
+                employeeId: roster.employeeId,
+                businessId: business._id,
+                date: new Date(roster.date),
+                shiftStart: new Date(roster.shiftStart),
+                shiftEnd: new Date(roster.shiftEnd),
+                breakTime: roster.breakTime || 0,
+            };
+
+            let saved;
+            if (roster.rosterId) {
+                saved = await Roster.findByIdAndUpdate(
+                    roster.rosterId,
+                    rosterData,
+                    { new: true }
+                ).populate('employeeId', 'firstName lastName');
+            } else {
+                saved = await Roster.create(rosterData);
+                await saved.populate('employeeId', 'firstName lastName'); // Populate after save
+            }
+
+            savedRosters.push(saved);
+        }
+
+        return res.status(200).json(savedRosters);
     } catch (err) {
-        res.status(500).json({error: err.message})
+        console.error(err);
+        return res.status(500).json({ error: err.message });
     }
+};
+
+// DELETE /
+// Delete roster
+const deleteRoster = async (req, res) => {
+    try {
+        const rosterId = req.params.id;
+        const roster = await Roster.findByIdAndDelete(rosterId);
+        if (!roster) {
+          return res.status(404).json({ message: 'Roster not found' });
+        }
+        res.status(200).json({ message: 'Roster deleted successfully' });
+      } catch (error) {
+        console.error('Error deleting roster:', error);
+        res.status(500).json({ message: 'Server error' });
+      }
 }
 
-
-export {createNewRoster, getRosterByMonthAndYear, updateAssignedRoster}
+export {createNewRoster, getRosterByMonthAndYear, updateAssignedRoster, deleteRoster}
