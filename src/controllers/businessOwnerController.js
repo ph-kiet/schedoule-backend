@@ -129,7 +129,7 @@ const getBusinessDetails = async (req, res) => {
     const loggedInUserID = req.user.id
 
     try {
-        const business = await Business.findOne({ownerId: loggedInUserID}, {_id: 0, name: 1, code: 1})
+        const business = await Business.findOne({ownerId: loggedInUserID}, {_id: 0, name: 1, code: 1, address: 1,location: 1})
 
         return res.status(200).json({business: business})
 
@@ -138,7 +138,24 @@ const getBusinessDetails = async (req, res) => {
         res.status(500).json({ error: error });
     }
 }
+
+
+const updateBusinessDetails = async (req, res) => {
+    const loggedInUserID = req.user.id
+    const {name, address, location} = req.body
+    try {
+        const business = await Business.findOneAndUpdate({ownerId: loggedInUserID}, {name, address, location},  {new: true})
+
+        if(!business) return res.status(404).json({message: "Business Not Found"})
+        
+        res.status(200).json({business: {name: business.name, code: business.code, address: location.address, location: business.location}})
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error });
+    }
+}
+
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Business <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
 
-export {createEmployee, updateEmployee, deleteEmployee, generateQRCode, getBusinessDetails}
+export {createEmployee, updateEmployee, deleteEmployee, generateQRCode, getBusinessDetails, updateBusinessDetails}
