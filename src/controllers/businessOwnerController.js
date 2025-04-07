@@ -1,9 +1,13 @@
 import Business from "../models/businessModel.js"
 import User from '../models/userModel.js'
+import Roster from '../models/rosterModel.js'
+import Attendance from '../models/attendanceModel.js'
 import bcrypt from 'bcryptjs'
 import generateRandomPassword from '../utils/randomPassword.js'
 import QRCODE from 'qrcode'
 import generateDailyToken from "../utils/generateDailyToken.js"
+import calculateHoursAndMinutes from "../utils/calculateHoursAndMinutes.js";
+import { populate } from "dotenv"
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 // POST /employee
 // Create a new employee
@@ -158,4 +162,146 @@ const updateBusinessDetails = async (req, res) => {
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Business <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 
 
-export {createEmployee, updateEmployee, deleteEmployee, generateQRCode, getBusinessDetails, updateBusinessDetails}
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Time Sheet >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+const getTimeSheetByWeek = async (req, res) => {
+    const loggedInUserID = req.user.id;
+
+    const startDate = new Date(req.params.startDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
+
+    try {
+        // Get the business ID for the logged-in user
+        const business = await Business.findOne(
+            { ownerId: loggedInUserID },
+            { _id: 1 }
+        );
+        const businessId = business._id;
+
+        // Fetch rosters and attendances for all employees under this business
+        const rosters = await Roster.find({
+            businessId: businessId,
+            date: {
+                $gte: startDate,
+                $lte: endDate,
+            },
+        });
+
+        const attendances = await Attendance.find({
+            businessId: businessId,
+            date: {
+                $gte: startDate,
+                $lte: endDate,
+            },
+        });
+
+        // Fetch all employees for this business to get their names
+        const employees = await User.find(
+            { businessId: businessId },
+            { _id: 1, firstName: 1, lastName: 1 }
+        );
+        // Create a map of employee IDs to full names
+        const employeeNameMap = {};
+        employees.forEach(emp => {
+            employeeNameMap[emp._id.toString()] = `${emp.firstName} ${emp.lastName}`;
+        });
+
+        // Group data by employee
+        const employeeTimesheets = {};
+
+        // Process rosters
+        rosters.forEach((roster) => {
+            const employeeId = roster.employeeId.toString();
+            if (!employeeTimesheets[employeeId]) {
+                employeeTimesheets[employeeId] = {
+                    weeklyData: {},
+                    rosterTotalHours: 0,
+                    actualTotalHours: 0
+                };
+            }
+            const dateKey = roster.date.toISOString().split('T')[0];
+            employeeTimesheets[employeeId].weeklyData[dateKey] = {
+                ...employeeTimesheets[employeeId].weeklyData[dateKey],
+                rosterStart: roster.shiftStart,
+                rosterEnd: roster.shiftEnd
+            };
+        });
+
+        // Process attendances
+        attendances.forEach((att) => {
+            const employeeId = att.employeeId.toString();
+            if (!employeeTimesheets[employeeId]) {
+                employeeTimesheets[employeeId] = {
+                    weeklyData: {},
+                    rosterTotalHours: 0,
+                    actualTotalHours: 0
+                };
+            }
+            const dateKey = att.date.toISOString().split('T')[0];
+            employeeTimesheets[employeeId].weeklyData[dateKey] = {
+                ...employeeTimesheets[employeeId].weeklyData[dateKey],
+                actualStart: att.checkInTime || null,
+                actualEnd: att.checkOutTime || null,
+                totalHours: att.totalHours || null
+            };
+        });
+
+        // Calculate hours and format response
+        const result = Object.entries(employeeTimesheets).map(([employeeId, data]) => {
+            const weeklyDataArray = [];
+            let rosterTotalHours = 0;
+            let actualTotalHours = 0;
+
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const dateKey = currentDate.toISOString().split('T')[0];
+                
+                const dayData = data.weeklyData[dateKey] || {};
+
+                // Calculate roster hours if present
+                let rosterHours = null;
+                if (dayData.rosterStart && dayData.rosterEnd) {
+                    const start = new Date(dayData.rosterStart);
+                    const end = new Date(dayData.rosterEnd);
+                    rosterHours = calculateHoursAndMinutes(start, end);
+                    rosterTotalHours += rosterHours;
+                }
+
+                // Add daily data to array
+                weeklyDataArray.push({
+                    date: dateKey,
+                    rosterStart: dayData.rosterStart || null,
+                    rosterEnd: dayData.rosterEnd || null,
+                    actualStart: dayData.actualStart || null,
+                    actualEnd: dayData.actualEnd || null,
+                    totalHours: dayData.totalHours || null,
+                });
+
+                // Add actual hours to total
+                if (dayData.totalHours) {
+                    actualTotalHours += dayData.totalHours;
+                }
+            }
+
+            return {
+                employeeId,
+                employeeName: employeeNameMap[employeeId] || 'Unknown Employee',
+                weeklyData: weeklyDataArray,
+                rosterTotalHours: Number(rosterTotalHours.toFixed(2)),
+                actualTotalHours: Number(actualTotalHours.toFixed(2))
+            };
+        });
+
+        res.status(200).json({
+            timeSheets: result,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Time Sheet <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+
+export {createEmployee, updateEmployee, deleteEmployee, generateQRCode, getBusinessDetails, updateBusinessDetails, getTimeSheetByWeek}

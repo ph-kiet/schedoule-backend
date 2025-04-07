@@ -2,7 +2,7 @@ import express from 'express'
 const router = express.Router()
 import verifyToken from '../middlewares/authMiddleware.js';
 import authorizeRoles from '../middlewares/roleMiddleware.js'
-import { createEmployee, deleteEmployee, generateQRCode, getBusinessDetails, updateBusinessDetails, updateEmployee } from '../controllers/businessOwnerController.js';
+import { createEmployee, deleteEmployee, generateQRCode, getBusinessDetails, updateBusinessDetails, updateEmployee, getTimeSheetByWeek } from '../controllers/businessOwnerController.js';
 
 
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
@@ -26,4 +26,9 @@ router.get('/qr-code', [verifyToken, authorizeRoles('BUSINESSOWNER')], generateQ
 router.get('/business', [verifyToken, authorizeRoles('BUSINESSOWNER')], getBusinessDetails)
 router.patch('/business', [verifyToken, authorizeRoles('BUSINESSOWNER')], updateBusinessDetails)
 /* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Business <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
+
+
+/* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Time Sheet >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
+router.get('/timesheet/:startDate', [verifyToken, authorizeRoles("BUSINESSOWNER")], getTimeSheetByWeek)
+/* <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Time Sheet <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< */
 export default router
