@@ -4,7 +4,7 @@ import verifyToken from '../middlewares/authMiddleware.js';
 import {register, login, QRLogin, logout, refreshToken, getUser} from "../controllers/authController.js"
 
 router.post("/login", login)
-// router.post("/register", register)
+router.post("/register", register)
 router.get("/user", verifyToken, getUser)
 
 router.post("/qr/login", QRLogin)

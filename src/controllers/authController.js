@@ -2,19 +2,41 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import User from '../models/userModel.js'
 import Business from '../models/businessModel.js'
-import router from '../routes/authRoutes.js'
+import generateRandomBusinessCode from '../utils/randomBusinessCode.js'
 
 const register = async (req, res) => {
     try{
-        const {username, password, accountType} = req.body
-        const hasedPassword = await bcrypt.hash(password, 10);
+        const {userDetails, businessDetails} = req.body
 
-        const newUser = new User({username, password: hasedPassword, accountType})
+        const existingUser = await User.findOne({username: userDetails.username})
+        
+        if(existingUser){
+            return res.status(400).json({errorMsg: `${userDetails.username} is taken!`})
+        }
+
+
+        let businessCode = generateRandomBusinessCode();        
+        let existingBusiness = await Business.findOne({code: businessCode})
+
+        // If the business code is existing create a new one
+        while(existingBusiness){
+            businessCode = generateRandomBusinessCode();
+            existingBusiness = await Business.findOne({code: businessCode})
+        }
+
+        const hasedPassword = await bcrypt.hash(userDetails.password, 10);
+        const newUser = new User({firstName: userDetails.firstName, lastName: userDetails.lastName, email: userDetails.email, phoneNumber: userDetails.phoneNumber, username: userDetails.username, password: hasedPassword, accountType: "BUSINESSOWNER", position: "owner"})
+        
+        const newBusiness = new Business({code: businessCode, name: businessDetails.businessName, ownerId: newUser._id, address: businessDetails.address, location: businessDetails.location})
+        
+        newUser.businessId = newBusiness._id
         await newUser.save();
+        await newBusiness.save();
 
-        res.status(201).json(newUser)
+        res.status(200).json({message: `User created successfully! Your business ID is ${businessCode}. `})
     }catch (err) {
-        res.status(500).jon({error: err})
+        console.log(err)
+        res.status(500).json({errorMsg: err})
     }
 }
 

@@ -7,7 +7,6 @@ import generateRandomPassword from '../utils/randomPassword.js'
 import QRCODE from 'qrcode'
 import generateDailyToken from "../utils/generateDailyToken.js"
 import calculateHoursAndMinutes from "../utils/calculateHoursAndMinutes.js";
-import { populate } from "dotenv"
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 // POST /employee
 // Create a new employee
