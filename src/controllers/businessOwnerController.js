@@ -7,6 +7,7 @@ import generateRandomPassword from '../utils/randomPassword.js'
 import QRCODE from 'qrcode'
 import generateDailyToken from "../utils/generateDailyToken.js"
 import calculateHoursAndMinutes from "../utils/calculateHoursAndMinutes.js";
+import { sendWelcomeEmployeeEmail } from "../external-api/postmark/index.js"
 /* >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Employee >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 // POST /employee
 // Create a new employee
@@ -14,30 +15,47 @@ const createEmployee = async (req, res) => {
     try{
         const loggedInUserID = req.user.id
 
-        const businessId = await Business.findOne({ownerId: loggedInUserID}, { _id: 1 })
+        const business = await Business.findOne({ownerId: loggedInUserID}, { _id: 1, name: 1, code: 1})
 
         const {username, firstName, lastName, email, phoneNumber, position} = req.body
 
-        let user = await User.findOne({username})
+        let user = await User.findOne({username: username})
+        
         if(user){
-            return res.status(422).json({message: `${username} is taken!`})
+            return res.status(422).json({errMsg: `${username} is taken!`})
         }
 
+        const randomPassword = generateRandomPassword(12)
 
         user = new User({
             username: username,
-            // password: await bcrypt.hash(generateRandomPassword(12), 10),
-            password: await bcrypt.hash('password', 10),
+            password: await bcrypt.hash(randomPassword, 10),
+            // password: await bcrypt.hash('password', 10),
+            isTempPassword: true,
             accountType: "EMPLOYEE",
             firstName: firstName,
             lastName: lastName,
             email: email,
             phoneNumber: phoneNumber,
             position: position,
-            businessId: businessId
+            businessId: business._id,
         })
 
         await user.save();
+
+        try {
+            await sendWelcomeEmployeeEmail({
+                // recipientEmail: "keithphan@schedoule.com",
+                recipientEmail: user.email,
+                recipientName: `${user.firstName} ${user.lastName}`,
+                businessCode: business.code,
+                businessName: business.name,
+                username: user.username,
+                password: randomPassword,
+              })
+        } catch (error) {
+            console.log(error)
+        }
 
         res.status(200).json({user: user})
 

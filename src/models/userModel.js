@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
 
+    isTempPassword: {
+        type: Boolean,
+        required: false,
+    },
+
     email: {
         type: String,
         required: true
