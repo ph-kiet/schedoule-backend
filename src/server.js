@@ -10,6 +10,8 @@ import businessOwnerRoutes from "./routes/businessOwnerRoutes.js";
 import qrRoutes from "./routes/qrRoutes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import https from 'https'
+import fs from 'fs'
 
 dotenv.config();
 const app = express();
@@ -18,7 +20,7 @@ const app = express();
 dbConnect();
 
 // Whitelist of allowed frontend origins
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5174", "http://localhost:5173"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:5173",process.env.CLIENT_APP_URL];
 
 // Middleware
 app.use(

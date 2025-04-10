@@ -48,8 +48,8 @@ const register = async (req, res) => {
 
     newUser.businessId = newBusiness._id;
 
-    // await newUser.save();
-    // await newBusiness.save();
+    await newUser.save();
+    await newBusiness.save();
 
     try {
       await sendWelcomeBusinessOwnerEmail({

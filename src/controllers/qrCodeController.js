@@ -1,10 +1,12 @@
 import crypto from "crypto";
 import Attendance from "../models/attendanceModel.js";
 import User from "../models/userModel.js";
+import Business from "../models/businessModel.js";
 import calculateHoursAndMinutes from "../utils/calculateHoursAndMinutes.js";
+import geolib from 'geolib';
 
 const qrCheckIn = async (req, res) => {
-  const { token } = req.body;
+  const { token, location } = req.body;
   const loggedInEmployeeID = req.user.id;
 
   if (!token || !loggedInEmployeeID) {
@@ -42,6 +44,24 @@ const qrCheckIn = async (req, res) => {
     return res.status(500).json({ error: "Failed to save check-in" });
   }
 
+  // Check user location
+  try {
+    const business = await Business.findOne({_id: user.businessId}, {location: 1})
+    const isNearby = verifyLocation(
+      {latitude: parseFloat(location.latitude), longitude: parseFloat(location.longitude)},
+      {latitude: parseFloat(business.location.lat), longitude: parseFloat(business.location.lng)}, 30) // 10 Meters
+
+    if(!isNearby.success){
+      return res.status(400).json({ locationError: isNearby.message });
+    }
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ error: error });
+  }
+  
+
+
   // console.log(user)
 
   const validHash = crypto
@@ -51,7 +71,7 @@ const qrCheckIn = async (req, res) => {
     .slice(0, 10);
   
   if (datePart !== today || hashPart !== validHash) {
-    return res.status(401).json({ error: "Invalid or expired token" });
+    return res.status(401).json({ error: "QR code is not valid!" });
   }
 
   try {
@@ -77,8 +97,24 @@ const qrCheckIn = async (req, res) => {
 };
 
 const qrCheckOut = async (req, res) => {
+  const {location} = req.body
   try {
     const attendance = await Attendance.findOne(req.attendanceId);
+
+    try {
+      const business = await Business.findOne({_id: attendance.businessId}, {location: 1})
+      const isNearby = verifyLocation(
+        {latitude: parseFloat(location.latitude), longitude: parseFloat(location.longitude)},
+        {latitude: parseFloat(business.location.lat), longitude: parseFloat(business.location.lng)}, 1) // 10 Meters
+  
+      if(!isNearby.success){
+        return res.status(400).json({ locationError: isNearby.message });
+      }
+  
+    } catch (error) {
+      console.log(error)
+      return res.status(500).json({ error: error });
+    }
 
     // Return if the employee already checked out for the day
     if (attendance.checkOutTime) {
@@ -142,5 +178,20 @@ const checkIfCheckedIn = async (employeeId) => {
   }
   return attendance;
 };
+
+const verifyLocation = (userLocation, businessLocation, maxDistance) => {
+  if(!userLocation || !userLocation.latitude || !userLocation.longitude){
+    return {success: false, message: "Location is missing"}
+  }
+
+  const distance = geolib.getDistance(userLocation, businessLocation);
+
+
+  if(distance <= maxDistance){
+    return {success: true}
+  } else{
+    return {success: false, message: "You are not nearby the office/store!"}
+  }
+}
 
 export { qrCheckIn, qrCheckOut };
